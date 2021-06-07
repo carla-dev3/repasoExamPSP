@@ -1,29 +1,45 @@
 package es.florida;
 
 
+import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 //Es la persona que se encarga de enviar los correos (va acorde con el MemberMonitor)
 public class MailSender {
 
-    synchronized public void sendEmail(String user, String newUser) throws InterruptedException, EmailException {
-        System.out.println("Sending email ");
+    public static void sendEmail(String user) {
+        try {
+            Lock.lock();
+            FileReader reader = new FileReader("users.txt");
+            BufferedReader bReader = new BufferedReader(reader);
+            String aux;
 
-        SimpleEmail email = new SimpleEmail();
+            while(!(aux = bReader.readLine()).equals(user)) {
+                Thread.sleep(1000);
+                System.out.println("Correo enviado a " + aux+ "\n" + user + " es un nuevo integrante");
 
-        //Configuracion necesaria para enviar correos
-        email.setHostName("localhost");
-        email.setSmtpPort(1025);
-        email.setSslSmtpPort("1025");
-        email.setAuthentication("", ""); //Cuenta de gmail y contraseña
-        email.addTo("carlaaparicio0905@gmail.com"); //Cuenta de destino
-        email.setFrom(user); //Cuenta de origen
-        email.setSubject("New user added");
-        email.setMsg("Added user " + newUser );
-        email.send();
+                SimpleEmail email = new SimpleEmail();
+                email.setHostName("localhost");
+                email.setSmtpPort(1025);
+                email.setSslSmtpPort("1025");
+                email.setAuthentication("", ""); //Cuenta de gmail y contraseña
+                email.setSSLOnConnect(false);
+                email.addTo(aux); //Cuenta de destino
+                email.setFrom("ejemplo@gmail.com"); //Cuenta de origen
+                email.setSubject("New user added");
+                email.setMsg("Added user " + user);
+                email.send();
+            }
+            bReader.close();
+            Lock.unlock();
 
-        System.out.println("Informed to user " + user + " that there is an other user added");
-        Thread.sleep(1000);
+        } catch (InterruptedException | IOException | EmailException e) {
+            e.printStackTrace();
+        }
     }
 }

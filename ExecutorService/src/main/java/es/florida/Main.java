@@ -9,8 +9,13 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("App started");
 
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(new MemberMonitor());
+        MemberCreator memberCreator = new MemberCreator();
+        MemberMonitor memberMonitor = new MemberMonitor();
+
+        Thread creatorThread = new Thread(memberCreator);
+        Thread monitorThread = new Thread(memberMonitor);
+        creatorThread.start();
+        monitorThread.start();
     }
 
 
